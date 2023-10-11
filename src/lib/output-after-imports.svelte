@@ -5,7 +5,7 @@
 </script>
 
 <div class="output">
-    <h2>After Importr</h2>
+    <h2>After Import</h2>
     {response_after_import}
 </div>
 

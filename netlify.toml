@@ -9,5 +9,5 @@
 
 [[redirects]]
   from = "/api/*"
-  to = "/.netlify/functions/gateway/:splat"
+  to = "/.netlify/functions/cpoint-playground-backend/:splat"
   status = 200

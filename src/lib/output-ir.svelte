@@ -2,7 +2,7 @@
     export let response_text: string;
     export let response_ir: string;
     export let response_after_import: string;
-    import { onMount } from 'svelte';
+    export let stdout_compiler: string;
 </script>
 
 <div class="output">
@@ -19,7 +19,3 @@
         overflow: auto;
     }
 </style>
-
-<svelte:head>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.22.0/themes/prism.min.css" rel="stylesheet" />
-</svelte:head>

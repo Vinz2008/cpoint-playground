@@ -26,16 +26,21 @@ func run_code(c *gin.Context) {
 		fmt.Println("error BindJSON")
 		return
 	}
+	_, err := os.Stat("temp/")
+	if !os.IsNotExist(err) {
+		os.RemoveAll("temp/")
+	}
+	os.Mkdir("temp", os.ModePerm)
 	f, err := os.Create("temp.cpoint")
 	if err != nil {
-		fmt.Print("error os.Create(\"temp.cpoint\")")
+		fmt.Println("error os.Create(\"temp.cpoint\")")
 		log.Fatal(err)
 	}
 	defer f.Close()
 	f.WriteString(code_to_run.Code)
-	err = exec.Command("cpoint", "temp.cpoint", "-no-delete-import-file").Run()
+	out_stdout_compiler, err := exec.Command("cpoint", "temp.cpoint", "-no-delete-import-file").Output()
 	if err != nil {
-		fmt.Print("error exec.Command(\"cpoint\", \"temp.cpoint\").Run()")
+		fmt.Println("error exec.Command(\"cpoint\", \"temp.cpoint\").Run()")
 		log.Fatal(err)
 	}
 
@@ -44,7 +49,7 @@ func run_code(c *gin.Context) {
 	if code_to_run.Should_return_ir {
 		out_ir, err := os.ReadFile("out.ll")
 		if err != nil {
-			fmt.Print("error exec.ReadFile(\"out.ll\")")
+			fmt.Println("error exec.ReadFile(\"out.ll\")")
 			log.Fatal(err)
 		}
 		ir = string(out_ir)
@@ -56,22 +61,25 @@ func run_code(c *gin.Context) {
 	if code_to_run.Should_return_after_imports {
 		out_after_imports, err := os.ReadFile("temp.cpoint.temp")
 		if err != nil {
-			fmt.Print("error exec.ReadFile(\"temp.cpoint.temp\")")
+			fmt.Println("error exec.ReadFile(\"temp.cpoint.temp\")")
 			log.Fatal(err)
 		}
 		after_imports = string(out_after_imports)
 	}
-
-	cmd := exec.Command("./a.out")
+	//a_out_abs_path, err := filepath.Abs("./a.out")
+	//cmd := exec.Command(a_out_abs_path)
+	cmd := exec.Command("../a.out")
+	cmd.Dir = "./temp/"
+	fmt.Println(cmd.Dir)
 	out_ran, err := cmd.Output()
 	if err != nil {
-		fmt.Print("error exec.Command(\"./a.out\").Output()")
+		fmt.Println("error exec.Command(\"./a.out\").Output()")
 		log.Fatal(err)
 	}
 	fmt.Println("out ran : ", string(out_ran))
 	//c.IndentedJSON(http.StatusOK, code_to_run)
 	//c.IndentedJSON(http.StatusOK, string(out))
-	c.JSON(http.StatusOK, gin.H{"output": string(out_ran), "output_ir": ir, "output_after_imports": after_imports})
+	c.JSON(http.StatusOK, gin.H{"stdout_compiler": string(out_stdout_compiler), "output": string(out_ran), "output_ir": ir, "output_after_imports": after_imports})
 	//c.JSON(http.StatusOK, code_to_run)
 }
 

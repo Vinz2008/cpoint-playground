@@ -21,6 +21,9 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"monaco-editor": "^0.44.0"
+		"i": "^0.3.7",
+		"monaco-editor": "^0.44.0",
+		"npm": "^10.2.0",
+		"svelte-splitpanes": "^0.8.0"
 	}
 }

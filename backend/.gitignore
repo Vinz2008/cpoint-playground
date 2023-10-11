@@ -4,3 +4,4 @@ cpoint-playground-backend
 *.o
 temp.cpoint
 *.temp
+temp/

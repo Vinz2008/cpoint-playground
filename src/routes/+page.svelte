@@ -8,8 +8,10 @@
     import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
     import OutputTabs from '$lib/output-tabs.svelte';
     import { config, grammar } from "$lib/monaco_def";
+    import { Pane, Splitpanes } from 'svelte-splitpanes';
 
     type responseJson = {
+    stdout_compiler: string
     output: string,
     output_ir: string,
     output_after_imports: string,
@@ -21,6 +23,7 @@
     let response_text: string = "";
     let response_ir: string = "";
     let response_after_import: string = "";
+    let stdout_compiler: string = "";
     console.log(typeof(OutputTabs));
     onMount(async () => {
         self.MonacoEnvironment = {
@@ -111,8 +114,10 @@
         response_text = response_json.output;
         response_ir = response_json.output_ir;
         response_after_import = response_json.output_after_imports;
+        stdout_compiler = response_json.stdout_compiler;
         console.log("response : ", response_text);
         //console.log("response ir : ", response_ir);
+        //console.log(stdout_compiler);
         return null;
     }
 </script>
@@ -124,13 +129,25 @@
 
 <div class="container">
 
+<Splitpanes>
+
+<Pane minSize={15}>
+    
 <div class="monaco-container" bind:this={divEl} />
+
+</Pane>
+
+<Pane>
 
 <div class="output-tab">
 
-<OutputTabs response_text={response_text} response_ir={response_ir} response_after_import={response_after_import}></OutputTabs>
+<OutputTabs response_text={response_text} response_ir={response_ir} response_after_import={response_after_import} stdout_compiler={stdout_compiler}></OutputTabs>
 
 </div>
+
+</Pane>
+
+</Splitpanes>
 <!--
 <div class="output">
 <h2>Output</h2>
@@ -147,7 +164,8 @@
         display: flex;
     }
     .monaco-container {
-        width: 55%;
+        /*width: 55%;*/
+        width: 100%;
         height: 750px;
     }
     .output, .output-tab {

@@ -7,6 +7,7 @@
     export let response_text : string;
     export let response_ir : string;
     export let response_after_import: string;
+    export let stdout_compiler: string;
     export let tabs: any[] = [
         {
             label: "Output",
@@ -54,7 +55,7 @@
 {#each tabs as tab}
 	{#if activeTabValue == tab.value}
 	<div class="box">
-		<svelte:component this={tab.component} response_text={response_text} response_ir={response_ir} response_after_import={response_after_import}/>
+		<svelte:component this={tab.component} response_text={response_text} response_ir={response_ir} response_after_import={response_after_import} stdout_compiler={stdout_compiler}/>
 	</div>
 	{/if}
 {/each}

@@ -18,6 +18,7 @@ type code_json struct {
 	Code                        string `json:"code"`
 	Should_return_ir            bool   `json:"should_return_ir"`
 	Should_return_after_imports bool   `json:should_return_after_imports`
+	Should_return_wasm          bool   `json:should_return_wasm`
 }
 
 func run_code(c *gin.Context) {
@@ -66,6 +67,22 @@ func run_code(c *gin.Context) {
 		}
 		after_imports = string(out_after_imports)
 	}
+
+	var wasm string = ""
+
+	if code_to_run.Should_return_wasm {
+		err := exec.Command("cpoint", "temp.cpoint", "-o", "temp.wasm", "-target-triplet", "wasm32-unknown-wasi", "-c").Run()
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = exec.Command("wasm2wat", "temp.wasm", "-o", "temp.wat").Run()
+		if err != nil {
+			log.Fatal(err)
+		}
+		out_wasm, err := os.ReadFile("temp.wat")
+		wasm = string(out_wasm)
+
+	}
 	//a_out_abs_path, err := filepath.Abs("./a.out")
 	//cmd := exec.Command(a_out_abs_path)
 	cmd := exec.Command("../a.out")
@@ -79,7 +96,8 @@ func run_code(c *gin.Context) {
 	fmt.Println("out ran : ", string(out_ran))
 	//c.IndentedJSON(http.StatusOK, code_to_run)
 	//c.IndentedJSON(http.StatusOK, string(out))
-	c.JSON(http.StatusOK, gin.H{"stdout_compiler": string(out_stdout_compiler), "output": string(out_ran), "output_ir": ir, "output_after_imports": after_imports})
+	// TODO : add WASM
+	c.JSON(http.StatusOK, gin.H{"stdout_compiler": string(out_stdout_compiler), "output": string(out_ran), "output_ir": ir, "output_wasm": wasm, "output_after_imports": after_imports})
 	//c.JSON(http.StatusOK, code_to_run)
 }
 

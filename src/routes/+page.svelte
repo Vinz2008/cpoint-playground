@@ -9,13 +9,23 @@
     import OutputTabs from '$lib/output-tabs.svelte';
     import { config, grammar } from "$lib/monaco_def";
     import { Pane, Splitpanes } from 'svelte-splitpanes';
-
+    //import Dropdown from '$lib/dropdown.svelte';
+    import DropdownButton from '$lib/dropdown-button.svelte';
+    //import { checkbox_Output, checkbox_IR, checkbox_After_imports } from "$lib/dropdown-store"
     type responseJson = {
-    stdout_compiler: string
-    output: string,
-    output_ir: string,
-    output_after_imports: string,
+        stdout_compiler: string
+        output: string,
+        output_ir: string,
+        output_wasm: string,
+        output_after_imports: string,
     };
+    let menuOpen: boolean = false;
+
+    let checkbox_Output: boolean = true;
+    let checkbox_IR: boolean = false;
+    let checkbox_After_imports: boolean = false;
+    let checkbox_Wasm: boolean = false;
+
 
     let divEl: HTMLDivElement;
     let editor: monaco.editor.IStandaloneCodeEditor;
@@ -23,8 +33,35 @@
     let response_text: string = "";
     let response_ir: string = "";
     let response_after_import: string = "";
+    let response_wasm: string = "";
     let stdout_compiler: string = "";
     console.log(typeof(OutputTabs));
+
+    const STORAGE_KEY = 'theme';
+    const DARK_PREFERENCE = '(prefers-color-scheme: dark)';
+    const THEMES = {
+        DARK: 'dark',
+        LIGHT: 'light',
+    };
+
+    const toggleTheme = () => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+
+    if (stored) {
+      // clear storage
+      localStorage.removeItem(STORAGE_KEY);
+    } else {
+      // store opposite of preference
+      localStorage.setItem(STORAGE_KEY, prefersDarkThemes() ? THEMES.LIGHT : THEMES.DARK);
+    }
+
+    // TODO: apply new theme
+    };
+
+    const prefersDarkThemes = () => window.matchMedia(DARK_PREFERENCE).matches;
+
+
+
     onMount(async () => {
         self.MonacoEnvironment = {
             getWorker: function (_moduleId: any, label: string) {
@@ -100,8 +137,9 @@
         const address = server_address + "/run-code"
         const body = JSON.stringify({
             code: editor.getValue(),
-            should_return_ir: true,
-            should_return_after_imports: true,
+            should_return_ir: checkbox_IR,
+            should_return_after_imports: checkbox_After_imports,
+            should_return_wasm: checkbox_Wasm,
         });
         const response = await fetch(address, {
             method: 'POST',
@@ -111,9 +149,29 @@
 			}
         });
         const response_json: responseJson = await response.json();
-        response_text = response_json.output;
-        response_ir = response_json.output_ir;
-        response_after_import = response_json.output_after_imports;
+
+        if (checkbox_Output){
+            response_text = response_json.output;
+        } else {
+            response_text = "";
+        }
+
+        if (checkbox_IR){
+            response_ir = response_json.output_ir;
+        } else {
+            response_ir = "";
+        }
+
+        if (checkbox_After_imports){
+            response_after_import = response_json.output_after_imports;
+        } else {
+            response_after_import = "";
+        }
+        if (checkbox_Wasm){
+            response_wasm = response_json.output_wasm;
+        } else {
+            response_wasm = "";
+        }
         stdout_compiler = response_json.stdout_compiler;
         console.log("response : ", response_text);
         //console.log("response ir : ", response_ir);
@@ -124,6 +182,39 @@
 
 
 <h1>Welcome to the C. playground</h1>
+
+<DropdownButton on:click={() => menuOpen = !menuOpen} {menuOpen}/>
+    
+{#if menuOpen}
+<div id="dropdown"  class="dropdown-content">
+    <label>
+        <input type="checkbox" checked={checkbox_Output} on:change={() => {checkbox_Output = !checkbox_Output}}/>
+            Output
+    </label>
+    
+    <br>
+    
+    <label>
+        <input type="checkbox" checked={checkbox_IR} on:change={() => {checkbox_IR = !checkbox_IR}}/>
+            LLVM IR
+    </label>
+    
+    <br>
+    
+    <label>
+        <input type="checkbox" checked={checkbox_After_imports} on:change={() => {checkbox_After_imports = !checkbox_After_imports}}/>
+            After Imports
+    </label>
+
+    <br>
+
+    <label>
+        <input type="checkbox" checked={checkbox_Wasm} on:change={() => {checkbox_Wasm = !checkbox_Wasm}}/>
+            WASM
+    </label>
+</div>
+{/if}
+
 
 <button on:click={() => run()}>Run</button>
 
@@ -141,7 +232,7 @@
 
 <div class="output-tab">
 
-<OutputTabs response_text={response_text} response_ir={response_ir} response_after_import={response_after_import} stdout_compiler={stdout_compiler}></OutputTabs>
+<OutputTabs response_text={response_text} response_ir={response_ir} response_after_import={response_after_import} response_wasm={response_wasm} stdout_compiler={stdout_compiler}></OutputTabs>
 
 </div>
 
@@ -158,7 +249,18 @@
 
 </div>
 
+<button on:click={toggleTheme}>Dark Mode</button>
+
+
+<svelte:head>
+	<link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=source-code-pro:400" rel="stylesheet" />
+</svelte:head>
+
 <style>
+    :root {
+        font-family: 'Source Code Pro', monospace;
+    }
     .container {
         margin-top: 20px;
         display: flex;
@@ -170,7 +272,6 @@
     }
     .output, .output-tab {
         height: 750px;
-        margin-left: 10px;
     }
 
     .output-tab {
@@ -189,6 +290,13 @@
         padding-left: 8px;
         box-shadow: none;
         text-decoration: none;
+    }
+
+    #dropdown {
+        position: absolute;
+        z-index: 1;
+        background-color: white;
+        border: 1px solid black;
     }
 
 </style>

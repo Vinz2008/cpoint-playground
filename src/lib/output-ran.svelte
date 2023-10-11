@@ -3,6 +3,7 @@
     export let response_ir: string;
     export let response_after_import: string;
     export let stdout_compiler: string;
+    export let response_wasm: string;
 </script>
 
 <div class="output-container">
@@ -38,7 +39,6 @@
     }
     .output {
         margin-top: 10px;
-        margin-left: 10px;
     }
     span {
         color: #bbb;

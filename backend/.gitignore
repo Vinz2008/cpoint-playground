@@ -5,3 +5,5 @@ cpoint-playground-backend
 temp.cpoint
 *.temp
 temp/
+*.wasm
+*.wat

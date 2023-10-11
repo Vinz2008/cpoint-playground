@@ -3,11 +3,13 @@
     import OutputIr from "./output-ir.svelte";
     import OutputRan from "./output-ran.svelte";
     import OutputAfterImports from "./output-after-imports.svelte";
+    import OutputWasm from "./output-wasm.svelte";
 
     export let response_text : string;
     export let response_ir : string;
     export let response_after_import: string;
     export let stdout_compiler: string;
+    export let response_wasm: string;
     export let tabs: any[] = [
         {
             label: "Output",
@@ -15,7 +17,7 @@
             component: OutputRan,
         }, 
         {
-            label: "Ir",
+            label: "IR",
             value: 2,
             component: OutputIr
         },
@@ -23,6 +25,11 @@
             label: "After Imports",
             value: 3,
             component: OutputAfterImports
+        },
+        {
+            label: "WASM",
+            value: 4,
+            component: OutputWasm
         }
     ];
     export let activeTabValue: number = 1;
@@ -55,7 +62,7 @@
 {#each tabs as tab}
 	{#if activeTabValue == tab.value}
 	<div class="box">
-		<svelte:component this={tab.component} response_text={response_text} response_ir={response_ir} response_after_import={response_after_import} stdout_compiler={stdout_compiler}/>
+		<svelte:component this={tab.component} response_text={response_text} response_ir={response_ir} response_after_import={response_after_import} stdout_compiler={stdout_compiler} response_wasm={response_wasm}/>
 	</div>
 	{/if}
 {/each}
